@@ -116,7 +116,7 @@ const readlineSync = require("readline-sync");
 
     await delay(2000);
 
-    let montosCompensar = ["1000", "2200", "4400", "8800", "17600"];
+    let montosCompensar = ["220", "500", "1200", "2550", "5100", "10200"];
 
     await page.evaluate(`document.querySelector("[id='amount-counter']").value = ${montosCompensar[0]}`)
     await page.evaluate(`document.querySelector("[id='amount-counter']").dispatchEvent(new Event('input'))`)
@@ -181,34 +181,40 @@ const readlineSync = require("readline-sync");
         // ----------------------------------------------------- COMPRA ----------------------------------------------------------
 
         if (type == true) {
-            console.log(
-                `[ ${moment().format("HH:mm:ss")} ] `,
-                chalk.green(`Comprar a las ${moment().format("HH:mm:ss")} ...`)
-            );
-            await page.evaluate(() =>
-                document.querySelector("#qa_trading_dealUpButton > button").click()
-            );
-            await delay(55000);
-            await page.waitForSelector("div > span.currency", { visible: true });
-            const resultado = await page.evaluate(
-                () => document.querySelector("div > span.currency").innerText
-            );
-            if (resultado == "0,00 Arg$") {
-                console.log(`              ${chalk.red(`Pérdida: $${montosCompensar[i]}`)}`);
-                totalPerdido += parseInt(montosCompensar[i]);
+            try {
+                console.log(
+                    `[ ${moment().format("HH:mm:ss")} ] `,
+                    chalk.green(`Comprar a las ${moment().format("HH:mm:ss")} ...`)
+                );
+                await page.evaluate(() =>
+                    document.querySelector("#qa_trading_dealUpButton > button").click()
+                );
+                await delay(55000);
+                await page.waitForSelector("div > span.currency", { visible: true });
+                const resultado = await page.evaluate(
+                    () => document.querySelector("div > span.currency").innerText
+                );
+                if (resultado == "0,00 Arg$") {
+                    console.log(`              ${chalk.red(`Pérdida: $${montosCompensar[i]}`)}`);
+                    totalPerdido += parseInt(montosCompensar[i]);
 
-                i++;
-                j++;
-                compensar = true;
-            } else {
-                console.log(`              ${chalk.cyan(`Ganancia $${resultado}`)}`);
-                totalGanado += parseInt(resultado.split(',')[0].replace(/[^\d]/g, ''));
+                    i++;
+                    j++;
+                    compensar = true;
+                } else {
+                    console.log(`              ${chalk.cyan(`Ganancia $${resultado}`)}`);
+                    totalGanado += parseInt(resultado.split(',')[0].replace(/[^\d]/g, ''));
 
-                if (i > 0) compensar = true;
-                j = 0;
-                i = 0;
+                    if (i > 0) compensar = true;
+                    j = 0;
+                    i = 0;
+                }
+            } catch (error) {
+                console.log(`              ${chalk.white.bgRed(`WARNING: No se encontró el último resultado en la página.`)}`);
+                console.log(`              ${chalk.white(`Reiniciando...`)}`);
+                continue;
             }
-            if (i == 5) i = 0;   // si quiero cambiar la cantidad de montos de la lista
+            if (i == 6) i = 0;   // si quiero cambiar la cantidad de montos de la lista
             console.log(`              ${chalk.black.bgGreen(`Total ganado: $${totalGanado.toLocaleString()}`)}`);
             console.log(`              ${chalk.black.bgRed(`Total perdido: $${totalPerdido.toLocaleString()}`)}`);
             console.log(`              ${chalk.black.bgYellow(`Balance : $${(totalGanado - totalPerdido).toLocaleString()}`)}`);
@@ -219,40 +225,46 @@ const readlineSync = require("readline-sync");
 
 
         } else if (type == false) {
-            console.log(
-                `[ ${moment().format("HH:mm:ss")} ] `,
-                chalk.magenta(`Vender  $${montosCompensar[i]} a las ${moment().format("HH:mm:ss")} ...`)
+            try {
+                console.log(
+                    `[ ${moment().format("HH:mm:ss")} ] `,
+                    chalk.magenta(`Vender  $${montosCompensar[i]} a las ${moment().format("HH:mm:ss")} ...`)
 
-            );
-            await page.evaluate(() =>
-                document.querySelector("#qa_trading_dealDownButton > button").click()
-            );
-            await delay(55000);
-            await page.waitForSelector("div > span.currency", { visible: true });
-            const resultado = await page.evaluate(
-                () => document.querySelector("div > span.currency").innerText
-            );
-            if (resultado == "0,00 Arg$") {
-                console.log(`              ${chalk.red(`Pérdida: $${montosCompensar[i]}`)}`);
-                totalPerdido += parseInt(montosCompensar[i]);
-                i++;
-                j++;
-                compensar = true;
-            } else {
-                console.log(`              ${chalk.cyan(`Ganancia $${resultado}`)}`);
-                totalGanado += parseInt(resultado.split(',')[0].replace(/[^\d]/g, ''));
-                if (i > 0) compensar = true;
-                j = 0;
-                i = 0;
+                );
+                await page.evaluate(() =>
+                    document.querySelector("#qa_trading_dealDownButton > button").click()
+                );
+                await delay(55000);
+                await page.waitForSelector("div > span.currency", { visible: true });
+                const resultado = await page.evaluate(
+                    () => document.querySelector("div > span.currency").innerText
+                );
+                if (resultado == "0,00 Arg$") {
+                    console.log(`              ${chalk.red(`Pérdida: $${montosCompensar[i]}`)}`);
+                    totalPerdido += parseInt(montosCompensar[i]);
+                    i++;
+                    j++;
+                    compensar = true;
+                } else {
+                    console.log(`              ${chalk.cyan(`Ganancia $${resultado}`)}`);
+                    totalGanado += parseInt(resultado.split(',')[0].replace(/[^\d]/g, ''));
+                    if (i > 0) compensar = true;
+                    j = 0;
+                    i = 0;
+                }
+            } catch (error) {
+                console.log(`              ${chalk.white.bgRed(`WARNING: No se encontró el último resultado en la página.`)}`);
+                console.log(`              ${chalk.white(`Reiniciando...`)}`);
+                continue;
             }
-            if (i == 5) i = 0;
+            if (i == 6) i = 0;   // si quiero cambiar la cantidad de montos de la lista
             console.log(`              ${chalk.black.bgGreen(`Total ganado: $${totalGanado.toLocaleString()}`)}`);
             console.log(`              ${chalk.black.bgRed(`Total perdido: $${totalPerdido.toLocaleString()}`)}`);
             console.log(`              ${chalk.black.bgYellow(`Balance : $${(totalGanado - totalPerdido).toLocaleString()}`)}`);
             console.log(`              Próxima apuesta $${montosCompensar[i]}`);
             console.log("");
-        }
 
+        }
 
         if (compensar) {
 
