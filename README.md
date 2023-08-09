@@ -1,35 +1,27 @@
 # Binomo-Trading-Bot
+Implementación del bot de Noth3r  ---> https://github.com/Noth3r/binomo-trading-bot
+Para tradear en pesos argentinos.
 
-I do not recommend using this bot on real accounts.
-
-All at your own risk.
-
-This project is only for study.
+No recomendable para cuentas reales
+Todo bajo su propio riesgo
+Proyecto con fines educativos
 
 ## Features:
-
-- Auto compensation
-- Maximum 4x compensation
-- With multiple algorithms
-
-## Todo:
-
-- Fixed amount type bug (fixed)
-
-## Installation & Usage
+- Auto compensación
+- Máximo 5x compensaciones
+- Múltiples algoritmos
+  
+## Instalación y Uso
 
 ```bash
 npm install
-# then
-node tradev2
+# luego
+node tradev3
 ```
 
 ## Preview
-![binom](https://user-images.githubusercontent.com/77542170/138682151-1b40c1fc-a933-4e2f-94a2-e00f14c1d544.png)
+![binomoTradingBot](https://github.com/sosajuanaugusto/BinomoTradingBot/assets/8278876/40ce3618-3277-430c-ab60-ef75f2dfc87d)
 
+## Contribuciones
 
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
+Pull requests son bienvenidos. Para cambios mayores, por favor abrir un issue primero para discutir el cambio que se quiera proponer.
