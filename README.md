@@ -1,6 +1,7 @@
 # Binomo-Trading-Bot
 Implementación del bot de Noth3r  ---> https://github.com/Noth3r/binomo-trading-bot
-Para tradear en pesos argentinos.
+Para tradear en pesos argentinos y nuevos features.
+Tiene en cuenta la opinión de la mayoría para apostar a la alza o a la baja.
 
 No recomendable para cuentas reales
 Todo bajo su propio riesgo
