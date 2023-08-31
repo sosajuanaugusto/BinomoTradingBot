@@ -104,9 +104,6 @@ const readlineSync = require("readline-sync");
     timeout: 80000,
   });
 
-  let montoFijo = parseInt(readlineSync.question("Ingrese el monto fijo: "));
-  let montoApostar = montoFijo;
-
   console.log(
     `[ ${moment().format("HH:mm:ss")} ] `,
     chalk.green("Trading en una cuenta demo")
@@ -117,9 +114,10 @@ const readlineSync = require("readline-sync");
     chalk.green("Start Trading...")
   );
 
+  let montosCompensar = ["220", "500", "1200", "2550", "5100", "10200"];
 
   await page.evaluate(
-    `document.querySelector("[id='amount-counter']").value = ${montoApostar}`
+    `document.querySelector("[id='amount-counter']").value = ${montosCompensar[0]}`
   );
   await page.evaluate(
     `document.querySelector("[id='amount-counter']").dispatchEvent(new Event('input'))`
@@ -134,6 +132,7 @@ const readlineSync = require("readline-sync");
   await delay(timer);
   let type = false;
   let j = 0;
+  let i = 0;
   let saldo;
 
   while (true) {
@@ -143,10 +142,10 @@ const readlineSync = require("readline-sync");
         );
         saldo = parseInt(strSaldo.replace(/[^\d]/g, "").toString().slice(0, -2));
         
-   // if (saldo < parseInt(2000000)) {
-    //  console.log("Saldo menor a $2.000.000 Deteniendo la ejecución...");
-    //  break;
-    //}
+    if (saldo < parseInt(2140041)) {
+      console.log("Saldo menor a $2.140.041. Deteniendo la ejecución...");
+      break;
+    }
 
     console.log(`__________________________________________`);
     console.log("");
@@ -193,7 +192,7 @@ const readlineSync = require("readline-sync");
       try {
         console.log(
           `[ ${moment().format("HH:mm:ss")} ] `,
-          chalk.green(`Comprar $${montoApostar} a las ${moment().format("HH:mm:ss")} ...`)
+          chalk.green(`Comprar a las ${moment().format("HH:mm:ss")} ...`)
         );
         await page.evaluate(() =>
           document.querySelector("#qa_trading_dealUpButton > button").click()
@@ -205,18 +204,18 @@ const readlineSync = require("readline-sync");
         );
         if (resultado == "0,00 Arg$") {
           console.log(
-            `              ${chalk.red(`Pérdida: $${montoApostar}`)}`
+            `              ${chalk.red(`Pérdida: $${montosCompensar[i]}`)}`
           );
 
-          montoApostar = parseInt(montoApostar * 2 + montoApostar * 0.2)
+          i++;
           j++;
-          //compensar = true;
+          compensar = true;
         } else {
           console.log(`              ${chalk.cyan(`Ganancia $${resultado}`)}`);
 
-          //compensar = false;
+          if (i > 0) compensar = true;
           j = 0;
-          montoApostar = montoFijo;
+          i = 0;
         }
       } catch (error) {
         console.log(
@@ -227,9 +226,9 @@ const readlineSync = require("readline-sync");
         console.log(`              ${chalk.white(`Reiniciando...`)}`);
         continue;
       }
-      //if (i == 6) i = 0; // si quiero cambiar la cantidad de montos de la lista
+      if (i == 6) i = 0; // si quiero cambiar la cantidad de montos de la lista
 
-      console.log(`              Próxima apuesta $${montoApostar}`);
+      console.log(`              Próxima apuesta $${montosCompensar[i]}`);
       console.log("");
 
       // ----------------------------------------------------- VENTA ----------------------------------------------------------
@@ -238,7 +237,7 @@ const readlineSync = require("readline-sync");
         console.log(
           `[ ${moment().format("HH:mm:ss")} ] `,
           chalk.magenta(
-            `Vender  $${montoApostar} a las ${moment().format(
+            `Vender  $${montosCompensar[i]} a las ${moment().format(
               "HH:mm:ss"
             )} ...`
           )
@@ -253,20 +252,19 @@ const readlineSync = require("readline-sync");
         );
         if (resultado == "0,00 Arg$") {
           console.log(
-            `              ${chalk.red(`Pérdida: $${montoApostar}`)}`
+            `              ${chalk.red(`Pérdida: $${montosCompensar[i]}`)}`
           );
 
-          montoApostar = parseInt(montoApostar * 2 + montoApostar * 0.2)
+          i++;
           j++;
-          //compensar = true;
+          compensar = true;
 
         } else {
           console.log(`              ${chalk.cyan(`Ganancia $${resultado}`)}`);
 
-          //compensar = false;
+          if (i > 0) compensar = true;
           j = 0;
-          montoApostar = montoFijo;
-          //i = 0;
+          i = 0;
 
         }
       } catch (error) {
@@ -278,19 +276,24 @@ const readlineSync = require("readline-sync");
         console.log(`              ${chalk.white(`Reiniciando...`)}`);
         continue;
       }
-      //if (i == 6) i = 0; // si quiero cambiar la cantidad de montos de la lista
+      if (i == 6) i = 0; // si quiero cambiar la cantidad de montos de la lista
 
-      console.log(`              Próxima apuesta $${montoApostar}`);
+      console.log(`              Próxima apuesta $${montosCompensar[i]}`);
       console.log("");
     }
 
+    if (compensar) {
+      await page.evaluate(
+        `document.querySelector("[id='amount-counter']").value = ${montosCompensar[i]}`
+      );
+      await page.evaluate(
+        `document.querySelector("[id='amount-counter']").dispatchEvent(new Event('input'))`
+      );
 
-      await page.evaluate((monto) => {
-        const amountInput = document.querySelector("[id='amount-counter']");
-        amountInput.value = monto;
-        amountInput.dispatchEvent(new Event('input'));
-      }, montoApostar);
-    
+      // await page.evaluate(`document.querySelector("[id='amount-counter']").value = ${montosCompensar[i]}`)
+      // await page.click("vui-input-number > input[type=text]");
+      //Cuenta demo 2.244
+    }
   }
 
 })();

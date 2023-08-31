@@ -1,4 +1,4 @@
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer"); //Cuenta demo 604.640,22
 const moment = require("moment");
 const chalk = require("chalk");
 const delay = require("delay");
@@ -106,6 +106,8 @@ const readlineSync = require("readline-sync");
 
   let montoFijo = parseInt(readlineSync.question("Ingrese el monto fijo: "));
   let montoApostar = montoFijo;
+  let perdidasConsecutivas = 0;
+  let usarAntimartingala = false;
 
   console.log(
     `[ ${moment().format("HH:mm:ss")} ] `,
@@ -116,7 +118,6 @@ const readlineSync = require("readline-sync");
     `[ ${moment().format("HH:mm:ss")} ] `,
     chalk.green("Start Trading...")
   );
-
 
   await page.evaluate(
     `document.querySelector("[id='amount-counter']").value = ${montoApostar}`
@@ -137,13 +138,12 @@ const readlineSync = require("readline-sync");
   let saldo;
 
   while (true) {
+    let strSaldo = await page.evaluate(
+      () => document.querySelector("[id='qa_trading_balance']").innerText
+    );
+    saldo = parseInt(strSaldo.replace(/[^\d]/g, "").toString().slice(0, -2));
 
-        let strSaldo = await page.evaluate(
-          () => document.querySelector("[id='qa_trading_balance']").innerText
-        );
-        saldo = parseInt(strSaldo.replace(/[^\d]/g, "").toString().slice(0, -2));
-        
-   // if (saldo < parseInt(2000000)) {
+    // if (saldo < parseInt(2000000)) {
     //  console.log("Saldo menor a $2.000.000 Deteniendo la ejecución...");
     //  break;
     //}
@@ -190,10 +190,18 @@ const readlineSync = require("readline-sync");
     // ----------------------------------------------------- COMPRA ----------------------------------------------------------
 
     if (type == true) {
+      if (usarAntimartingala) {
+        montoApostar = Math.floor(montoApostar / 2.5); // Reducir monto de apuesta
+      } else {
+        montoApostar = Math.floor(montoApostar * 2.5); // Martingala
+      }
+
       try {
         console.log(
           `[ ${moment().format("HH:mm:ss")} ] `,
-          chalk.green(`Comprar $${montoApostar} a las ${moment().format("HH:mm:ss")} ...`)
+          chalk.green(
+            `Comprar $${montoApostar} a las ${moment().format("HH:mm:ss")} ...`
+          )
         );
         await page.evaluate(() =>
           document.querySelector("#qa_trading_dealUpButton > button").click()
@@ -204,19 +212,26 @@ const readlineSync = require("readline-sync");
           () => document.querySelector("div > span.currency").innerText
         );
         if (resultado == "0,00 Arg$") {
-          console.log(
-            `              ${chalk.red(`Pérdida: $${montoApostar}`)}`
-          );
+          console.log(chalk.red(`              Pérdida: $${montoApostar}`));
+          perdidasConsecutivas++;
 
-          montoApostar = parseInt(montoApostar * 2 + montoApostar * 0.2)
-          j++;
-          //compensar = true;
+          if (perdidasConsecutivas >= 4) {
+            if (usarAntimartingala) {
+              usarAntimartingala = false;
+              console.log(chalk.yellow("Cambiar a técnica martingala"));
+            } else {
+              usarAntimartingala = true;
+              console.log(chalk.blue("Cambiar a técnica antimartingala"));
+            }
+            perdidasConsecutivas = 0;
+          }
         } else {
-          console.log(`              ${chalk.cyan(`Ganancia $${resultado}`)}`);
-
-          //compensar = false;
-          j = 0;
+          console.log(chalk.cyan(`              Ganancia $${resultado}`));
+          perdidasConsecutivas = 0;
           montoApostar = montoFijo;
+          if (usarAntimartingala) {
+            montoApostar = montoApostar * 2.5;
+          }
         }
       } catch (error) {
         console.log(
@@ -227,20 +242,22 @@ const readlineSync = require("readline-sync");
         console.log(`              ${chalk.white(`Reiniciando...`)}`);
         continue;
       }
-      //if (i == 6) i = 0; // si quiero cambiar la cantidad de montos de la lista
 
       console.log(`              Próxima apuesta $${montoApostar}`);
       console.log("");
 
       // ----------------------------------------------------- VENTA ----------------------------------------------------------
     } else if (type == false) {
+      if (usarAntimartingala) {
+        montoApostar = Math.floor(montoApostar / 2.5); // Reducir monto de apuesta
+      } else {
+        montoApostar = Math.floor(montoApostar * 2.5); // Martingala
+      }
       try {
         console.log(
           `[ ${moment().format("HH:mm:ss")} ] `,
           chalk.magenta(
-            `Vender  $${montoApostar} a las ${moment().format(
-              "HH:mm:ss"
-            )} ...`
+            `Vender  $${montoApostar} a las ${moment().format("HH:mm:ss")} ...`
           )
         );
         await page.evaluate(() =>
@@ -252,22 +269,26 @@ const readlineSync = require("readline-sync");
           () => document.querySelector("div > span.currency").innerText
         );
         if (resultado == "0,00 Arg$") {
-          console.log(
-            `              ${chalk.red(`Pérdida: $${montoApostar}`)}`
-          );
+          console.log(chalk.red(`              Pérdida: $${montoApostar}`));
+          perdidasConsecutivas++;
 
-          montoApostar = parseInt(montoApostar * 2 + montoApostar * 0.2)
-          j++;
-          //compensar = true;
-
+          if (perdidasConsecutivas >= 4) {
+            if (usarAntimartingala) {
+              usarAntimartingala = false;
+              console.log(chalk.yellow("Cambiar a técnica martingala"));
+            } else {
+              usarAntimartingala = true;
+              console.log(chalk.blue("Cambiar a técnica antimartingala"));
+            }
+            perdidasConsecutivas = 0;
+          }
         } else {
-          console.log(`              ${chalk.cyan(`Ganancia $${resultado}`)}`);
-
-          //compensar = false;
-          j = 0;
+          console.log(chalk.cyan(`              Ganancia $${resultado}`));
+          perdidasConsecutivas = 0;
           montoApostar = montoFijo;
-          //i = 0;
-
+          if (usarAntimartingala) {
+            montoApostar = montoApostar * 2.5;
+          }
         }
       } catch (error) {
         console.log(
@@ -284,13 +305,10 @@ const readlineSync = require("readline-sync");
       console.log("");
     }
 
-
-      await page.evaluate((monto) => {
-        const amountInput = document.querySelector("[id='amount-counter']");
-        amountInput.value = monto;
-        amountInput.dispatchEvent(new Event('input'));
-      }, montoApostar);
-    
+    await page.evaluate((monto) => {
+      const amountInput = document.querySelector("[id='amount-counter']");
+      amountInput.value = monto;
+      amountInput.dispatchEvent(new Event("input"));
+    }, montoApostar);
   }
-
 })();
