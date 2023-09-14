@@ -1,4 +1,4 @@
-const puppeteer = require("puppeteer"); //Cuenta demo $2.721.235  30/08
+const puppeteer = require("puppeteer"); //Cuenta demo $2.790.339  31/08
 const moment = require("moment");
 const chalk = require("chalk");
 const delay = require("delay");
@@ -137,6 +137,8 @@ const readlineSync = require("readline-sync");
   let type = false;
   let saldo;
   let operar = false;
+  let ganancias = 0;
+  let perdidas = 0;
 
   // Definir una función para observar cambios en el precio
   async function observePriceChanges() {
@@ -191,7 +193,7 @@ const readlineSync = require("readline-sync");
             break;
           } else {
             // No hacer nada si no se cumple ninguna condición
-            console.log("No se cumple ninguna condición de compra/venta. Esperando...");
+            //console.log("No se cumple ninguna condición de compra/venta. Esperando...");
             operar = false;
           }
         }
@@ -288,11 +290,13 @@ const readlineSync = require("readline-sync");
             if (resultado == "0,00 Arg$") {
               console.log(chalk.red(`              Pérdida: $${montoApostar}`));
               perdidasConsecutivas++;
+              perdidas++;
               montoApostar = Math.floor(montoApostar * 2.2); // Martingala
             } else {
               console.log(chalk.cyan(`              Ganancia $${resultado}`));
               perdidasConsecutivas = 0;
               montoApostar = montoFijo;
+              ganancias++;
             }
           } catch (error) {
             console.log(
@@ -307,6 +311,8 @@ const readlineSync = require("readline-sync");
           }
 
           console.log(`              Próxima apuesta $${montoApostar}`);
+          console.log('ganancias: ' + ganancias);
+          console.log('perdidas: ' + perdidas);
           console.log("");
 
           // ----------------------------------------------------- VENTA ----------------------------------------------------------
@@ -335,11 +341,13 @@ const readlineSync = require("readline-sync");
             if (resultado == "0,00 Arg$") {
               console.log(chalk.red(`              Pérdida: $${montoApostar}`));
               perdidasConsecutivas++;
+              perdidas++;
               montoApostar = Math.floor(montoApostar * 2.2); // Martingala
             } else {
               console.log(chalk.cyan(`              Ganancia $${resultado}`));
               perdidasConsecutivas = 0;
               montoApostar = montoFijo;
+              ganancias++;
             }
           } catch (error) {
             console.log(
@@ -354,6 +362,8 @@ const readlineSync = require("readline-sync");
           }
 
           console.log(`              Próxima apuesta $${montoApostar}`);
+          console.log('ganancias: ' + ganancias);
+          console.log('perdidas: ' + perdidas);
           console.log("");
         }
 
